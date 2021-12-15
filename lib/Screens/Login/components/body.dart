@@ -1,3 +1,6 @@
+import 'package:dynamicrouteplanner/FirebaseAuthAPI/ProxyAuthAPI.dart';
+import 'package:dynamicrouteplanner/Screens/TypeRouter/TypeAskerAPIUI.dart';
+import 'package:dynamicrouteplanner/Screens/Welcome/welcome_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamicrouteplanner/Screens/Login/components/background.dart';
 import 'package:dynamicrouteplanner/Screens/Signup/signup_screen.dart';
@@ -8,15 +11,16 @@ import 'package:dynamicrouteplanner/components/rounded_password_field.dart';
 import 'package:flutter_svg/svg.dart';
 
 class Body extends StatelessWidget {
-  const Body({
-    Key key,
-  }) : super(key: key);
+
+  String _email = "";
+  String _password = "";
+  DRPAuthAPI API = DRPAuthAPI();
 
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    String email = "";
-    String password = "";
+    String _email = "";
+    String _password = "";
 
     return Background(
       child: SingleChildScrollView(
@@ -36,19 +40,21 @@ class Body extends StatelessWidget {
             RoundedInputField(
               hintText: "Your Email",
               onChanged: (value) {
-                email = value;
+                _email = value;
               },
             ),
             RoundedPasswordField(
               onChanged: (value) {
-                password = value;
+                _password = value;
               },
             ),
             RoundedButton(
               text: "LOGIN",
-              press: () {
-                print(email);
-                print(password);
+              press: () async {
+                  await API.signIn(_email, _password);
+                  if (API.getLoggedInfo()) {
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => TypeAsker()), ModalRoute.withName("/Home"));
+                  }
               },
             ),
             SizedBox(height: size.height * 0.03),

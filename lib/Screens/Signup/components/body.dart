@@ -1,3 +1,7 @@
+import 'package:dynamicrouteplanner/FirebaseAuthAPI/ProxyAuthAPI.dart';
+import 'package:dynamicrouteplanner/Screens/TypeRouter/TypeAskerAPIUI.dart';
+import 'package:dynamicrouteplanner/Screens/Welcome/welcome_screen.dart';
+import 'package:dynamicrouteplanner/StaticConstants/DRP_Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamicrouteplanner/Screens/Login/login_screen.dart';
 import 'package:dynamicrouteplanner/Screens/Signup/components/background.dart';
@@ -8,8 +12,14 @@ import 'package:dynamicrouteplanner/components/rounded_button.dart';
 import 'package:dynamicrouteplanner/components/rounded_input_field.dart';
 import 'package:dynamicrouteplanner/components/rounded_password_field.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Body extends StatelessWidget {
+
+  String _email = "";
+  String _password = "";
+  DRPAuthAPI API = DRPAuthAPI();
+
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
@@ -19,7 +29,7 @@ class Body extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text(
-              "SIGNUP",
+              "Dynamic Route Planner Sign Up",
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             SizedBox(height: size.height * 0.03),
@@ -28,15 +38,24 @@ class Body extends StatelessWidget {
               height: size.height * 0.35,
             ),
             RoundedInputField(
-              hintText: "Your Email",
-              onChanged: (value) {},
+              hintText: "Email",
+              onChanged: (value) {
+                _email = value;
+              },
             ),
             RoundedPasswordField(
-              onChanged: (value) {},
+              onChanged: (value) {
+                _password = value;
+              },
             ),
             RoundedButton(
-              text: "SIGNUP",
-              press: () {},
+              text: "SIGN UP",
+              press: () async {
+                  await API.createUser(_email, _password);
+                  if (API.getLoggedInfo()) {
+                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => TypeAsker()), ModalRoute.withName("/Home"));
+                  }
+                },
             ),
             SizedBox(height: size.height * 0.03),
             AlreadyHaveAnAccountCheck(
@@ -57,16 +76,13 @@ class Body extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 SocalIcon(
-                  iconSrc: "assets/icons/facebook.svg",
-                  press: () {},
-                ),
-                SocalIcon(
-                  iconSrc: "assets/icons/twitter.svg",
-                  press: () {},
-                ),
-                SocalIcon(
                   iconSrc: "assets/icons/google-plus.svg",
-                  press: () {},
+                  press: () async {
+                      await API.googleLogin();
+                      if (API.getLoggedInfo()) {
+                          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => TypeAsker()), ModalRoute.withName("/Home"));
+                      }
+                  },
                 ),
               ],
             )
