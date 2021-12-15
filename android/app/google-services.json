@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "814457106851",
+    "project_id": "drpdb-be79f",
+    "storage_bucket": "drpdb-be79f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:814457106851:android:85351ee6a7e8d22b1cea16",
+        "android_client_info": {
+          "package_name": "com.example.dynamicrouteplanner"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "814457106851-7th7k0mcjs4a5t4be69iudpkq6i379p6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdIcVrtvLrOh6sZux2PfluznNfnkqRdys"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "814457106851-7th7k0mcjs4a5t4be69iudpkq6i379p6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
