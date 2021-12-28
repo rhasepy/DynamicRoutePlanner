@@ -26,5 +26,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <meta-data
+            android:name="com.example.dynamicrouteplanner"
+            android:value="AIzaSyCgFcGWJ0K_Nbmtb9aXe9k9JmKHn7_xODY" />
+        <meta-data
+            android:name="com.google.android.geo.AIzaSyCgFcGWJ0K_Nbmtb9aXe9k9JmKHn7_xODY"
+            android:value="AIzaSyCgFcGWJ0K_Nbmtb9aXe9k9JmKHn7_xODY"/>
     </application>
 </manifest>
