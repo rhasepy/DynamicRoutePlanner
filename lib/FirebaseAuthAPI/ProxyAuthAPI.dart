@@ -31,12 +31,12 @@ class DRPAuthAPI
 
     void addPassenger(Map<String, dynamic> user) async {
         user.forEach((k, v) => print("Key : $k, Value : $v"));
-        await this._Passengercollection.doc(user["UUID"]).set(user);
+        await this._Passengercollection.doc(user["email"]).set(user);
     }
 
     void addDriver(Map<String, dynamic> user) async {
         user.forEach((k, v) => print("Key : $k, Value : $v"));
-        await this._Drivercollection.doc(user["UUID"]).set(user);
+        await this._Drivercollection.doc(user["email"]).set(user);
     }
 
     void fetchPassenger() {

@@ -7,7 +7,7 @@ import 'package:dynamicrouteplanner/components/rounded_button.dart';
 import 'package:dynamicrouteplanner/components/rounded_input_field.dart';
 import 'package:dynamicrouteplanner/components/rounded_phone_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:dynamicrouteplanner/constants.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';

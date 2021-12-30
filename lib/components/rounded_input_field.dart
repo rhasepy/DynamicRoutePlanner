@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dynamicrouteplanner/components/text_field_container.dart';
-import 'package:dynamicrouteplanner/constants.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 
 class RoundedInputField extends StatelessWidget {
   final String hintText;

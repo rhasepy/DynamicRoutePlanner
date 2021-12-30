@@ -3,7 +3,7 @@ import 'package:dynamicrouteplanner/Screens/Login/login_screen.dart';
 import 'package:dynamicrouteplanner/Screens/Signup/signup_screen.dart';
 import 'package:dynamicrouteplanner/Screens/Welcome/components/background.dart';
 import 'package:dynamicrouteplanner/components/rounded_button.dart';
-import 'package:dynamicrouteplanner/constants.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:flutter_svg/svg.dart';
 
 class Body extends StatelessWidget {
