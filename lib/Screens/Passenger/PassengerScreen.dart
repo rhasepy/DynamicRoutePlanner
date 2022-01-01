@@ -85,7 +85,7 @@ class MapSampleState extends State<MapSample>
   }
 
   void setDriverMarker() async {
-    driverPin = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/icons/Bus.svg');
+    driverPin = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/images/busDriver.png');
   }
 
   void _onMapCreated(GoogleMapController controller) {
