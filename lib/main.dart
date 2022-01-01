@@ -1,4 +1,3 @@
-import 'package:dynamicrouteplanner/StaticConstants/DRP_Constants.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamicrouteplanner/Screens/Welcome/welcome_screen.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';

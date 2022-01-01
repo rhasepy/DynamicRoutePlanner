@@ -142,7 +142,7 @@ class MapSampleState extends State<MapSample>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToTheLake,
         label: Text('Find Shortest Path'),
-        icon: Icon(Icons.directions_car),
+        icon: Icon(Icons.directions_bus),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );

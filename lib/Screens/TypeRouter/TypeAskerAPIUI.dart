@@ -23,7 +23,7 @@ class _TypeAsker extends State<TypeAsker>
   String _phoneNumber;
   String _nickName;
   DRPAuthAPI _API;
-  bool stayScreen;
+  bool stayScreen = false;
 
   _TypeAsker() {
     this._phoneNumber = "";
@@ -32,12 +32,17 @@ class _TypeAsker extends State<TypeAsker>
     this.stayScreen = false;
   }
 
-  void tryApply(Map<String, dynamic> user) {
+  void tryApply(Map<String, dynamic> user) async {
     try {
       if (user.containsKey("incomingList")) {
+        driver = user;
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
       }
       else if (user.containsKey("incoming")) {
+        student = user;
+        await FirebaseFirestore.instance.collection('Drivers').doc(student["busID"]).get().then((value) => {
+          driver = value.data()
+        });
         Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Passenger()), ModalRoute.withName("/Home"));
       }
     } catch (e) {}
@@ -47,13 +52,13 @@ class _TypeAsker extends State<TypeAsker>
   void initState() {
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.uid).get().then((value) =>
+      await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) =>
           tryApply(value.data()));
       setState(() {});
     });
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
-      await FirebaseFirestore.instance.collection('Passengers').doc(FirebaseAuth.instance.currentUser.uid).get().then((value) =>
+      await FirebaseFirestore.instance.collection('Passengers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) =>
           tryApply(value.data()));
       setState(() {
         stayScreen = true;

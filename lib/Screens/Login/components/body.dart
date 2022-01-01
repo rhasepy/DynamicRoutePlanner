@@ -19,8 +19,6 @@ class Body extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Size size = MediaQuery.of(context).size;
-    String _email = "";
-    String _password = "";
 
     return Background(
       child: SingleChildScrollView(

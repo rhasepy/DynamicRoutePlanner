@@ -45,14 +45,75 @@ class DRPAuthAPI
         });
     }
 
+    void DRIVER_addPassenger(String email) async {
+        
+        bool willAdd = false;
+        
+        await FirebaseFirestore.instance.collection('Passengers').doc(email).get().then((value) => {
+           if (value.data() == null) {
+                Fluttertoast.showToast(
+                msg: "User not found!",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,
+                textColor: Colors.white,
+                fontSize: 16.0)
+               
+           } else if (value.data()["busID"] != 0) {
+               Fluttertoast.showToast(
+                   msg: "User have has already bus!",
+                   toastLength: Toast.LENGTH_SHORT,
+                   gravity: ToastGravity.BOTTOM,
+                   timeInSecForIosWeb: 1,
+                   backgroundColor: Colors.red,
+                   textColor: Colors.white,
+                   fontSize: 16.0)
+           } else {
+               willAdd = true
+           }
+        });
+
+        if (willAdd) {
+            Map<String, dynamic> driver = null;
+            Map<String, dynamic> student = null;
+
+            await FirebaseFirestore.instance.collection('Passengers').doc(email).get().then((value) => {
+               student = value.data()
+            });
+
+            await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) => {
+                driver = value.data()
+            });
+
+            student["busID"] = FirebaseAuth.instance.currentUser.email;
+            List temp = driver["incomingList"];
+            if (temp.contains(email) == false) {
+                temp.add(email);
+            }
+            driver["incomingList"] = temp;
+
+            await FirebaseFirestore.instance.collection('Passengers').doc(email).update(student);
+            await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).update(driver);
+            Fluttertoast.showToast(
+                msg: "Success",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.green,
+                textColor: Colors.white,
+                fontSize: 16.0);
+        }
+    }
+
     void getSpecUser() async {
         print("Drivers: ");
-        await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.uid).get().then((value) => {
+        await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) => {
             print("Test1: " + value.data()["name"])
         });
 
         print("Passengers: ");
-        await FirebaseFirestore.instance.collection('Passengers').doc(FirebaseAuth.instance.currentUser.uid).get().then((value) =>
+        await FirebaseFirestore.instance.collection('Passengers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) =>
             print("Test2: " + value.data()["name"]));
     }
 
