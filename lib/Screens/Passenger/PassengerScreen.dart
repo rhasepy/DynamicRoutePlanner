@@ -81,11 +81,11 @@ class MapSampleState extends State<MapSample>
   @override
   void initState() {
     super.initState();
-    setDriverMarker();
-  }
-
-  void setDriverMarker() async {
-    driverPin = await BitmapDescriptor.fromAssetImage(ImageConfiguration(), 'assets/images/busDriver.png');
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(size: Size(48, 48)), 'assets/images/bus.png')
+        .then((value) {
+      driverPin = value;
+    });
   }
 
   void _onMapCreated(GoogleMapController controller) {
