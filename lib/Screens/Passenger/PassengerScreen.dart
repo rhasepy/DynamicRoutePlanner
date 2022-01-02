@@ -132,16 +132,19 @@ class MapSampleState extends State<MapSample>
   }
 
   void updateDriverMarker() {
-     _markers.remove(_markers.elementAt(1));
-     _markers.add( Marker(
-       markerId: MarkerId('id-2'),
-       position: LatLng(driver["lat"], driver["lng"]),
-       icon: driverPin,
-       infoWindow: InfoWindow(
-           title: "Bus Driver",
-           snippet: "Your Bus Driver Location"
-       ),
-     ));
+
+      if (_markers.length > 1) {
+        _markers.remove(_markers.elementAt(1));
+        _markers.add( Marker(
+          markerId: MarkerId('id-2'),
+          position: LatLng(driver["lat"], driver["lng"]),
+          icon: driverPin,
+          infoWindow: InfoWindow(
+              title: "Bus Driver",
+              snippet: "Your Bus Driver Location"
+          ),
+        ));
+      }
   }
 
   @override
@@ -159,12 +162,15 @@ class MapSampleState extends State<MapSample>
               return Center(child: CircularProgressIndicator());
             }
             // Update just driver location that is user's driver
-            for (int i = 0; i < snapshot.data.docs.length; ++i) {
-              if (snapshot.data.docs[i]['email'] == driver['email']) {
-                driver['lat'] = snapshot.data.docs[i]['lat'];
-                driver['lng'] = snapshot.data.docs[i]['lng'];
+            try {
+              for (int i = 0; i < snapshot.data.docs.length; ++i) {
+                if (snapshot.data.docs[i]['email'] == driver['email']) {
+                  driver['lat'] = snapshot.data.docs[i]['lat'];
+                  driver['lng'] = snapshot.data.docs[i]['lng'];
+                }
               }
-            }
+            } catch (e) {}
+
             updateDriverMarker();
             return GoogleMap(
                 mapType: MapType.normal,
