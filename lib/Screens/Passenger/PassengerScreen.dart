@@ -77,14 +77,20 @@ class MapSampleState extends State<MapSample>
 
   Set<Marker> _markers = {};
   BitmapDescriptor driverPin;
+  BitmapDescriptor studentPin;
 
   @override
   void initState() {
     super.initState();
     BitmapDescriptor.fromAssetImage(
-        ImageConfiguration(size: Size(48, 48)), 'assets/images/bus.png')
+        ImageConfiguration(), 'assets/images/bus.png')
         .then((value) {
       driverPin = value;
+    });
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(), 'assets/images/student.png')
+        .then((value) {
+      studentPin = value;
     });
   }
 
@@ -94,6 +100,7 @@ class MapSampleState extends State<MapSample>
         Marker(
             markerId: MarkerId('id-1'),
             position: LatLng(student["lat"], student["lng"]),
+            icon: studentPin,
             infoWindow: InfoWindow(
               title: "You",
               snippet: "Your location",
@@ -101,7 +108,9 @@ class MapSampleState extends State<MapSample>
         )
       );
       _markers.add(
-          Marker(markerId: MarkerId('id-2'), position: LatLng(driver["lat"], driver["lng"]),
+          Marker(
+              markerId: MarkerId('id-2'),
+              position: LatLng(driver["lat"], driver["lng"]),
               icon: driverPin,
               infoWindow: InfoWindow(
                   title: "Bus Driver",
