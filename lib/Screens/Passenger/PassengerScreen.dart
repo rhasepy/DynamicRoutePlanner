@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/Screens/Passenger/ChangeLocation.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../main.dart';
+import 'package:location/location.dart' as loc;
 
 class Passenger extends StatelessWidget {
   @override
@@ -79,9 +82,14 @@ class MapSampleState extends State<MapSample>
   BitmapDescriptor driverPin;
   BitmapDescriptor studentPin;
 
+  final loc.Location location = loc.Location();
+  StreamSubscription<loc.LocationData> locationSubscription;
+
   @override
   void initState() {
     super.initState();
+    _requestPermission();
+
     BitmapDescriptor.fromAssetImage(
         ImageConfiguration(), 'assets/images/bus.png')
         .then((value) {
@@ -92,6 +100,7 @@ class MapSampleState extends State<MapSample>
         .then((value) {
       studentPin = value;
     });
+    //_listenLocation();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -107,6 +116,7 @@ class MapSampleState extends State<MapSample>
             ),
         )
       );
+
       _markers.add(
           Marker(
               markerId: MarkerId('id-2'),
@@ -121,6 +131,19 @@ class MapSampleState extends State<MapSample>
     });
   }
 
+  void updateDriverMarker() {
+     _markers.remove(_markers.elementAt(1));
+     _markers.add( Marker(
+       markerId: MarkerId('id-2'),
+       position: LatLng(driver["lat"], driver["lng"]),
+       icon: driverPin,
+       infoWindow: InfoWindow(
+           title: "Bus Driver",
+           snippet: "Your Bus Driver Location"
+       ),
+     ));
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -129,11 +152,27 @@ class MapSampleState extends State<MapSample>
         backgroundColor: Colors.blueAccent[200],
         title: Text("Dynamic Route Planner - Student"),
       ),
-      body: GoogleMap(
-        mapType: MapType.normal,
-        onMapCreated: _onMapCreated,
-        markers: _markers,
-        initialCameraPosition: _kGooglePlex
+      body: StreamBuilder(
+          stream: FirebaseFirestore.instance.collection('Drivers').snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(child: CircularProgressIndicator());
+            }
+            // Update just driver location that is user's driver
+            for (int i = 0; i < snapshot.data.docs.length; ++i) {
+              if (snapshot.data.docs[i]['email'] == driver['email']) {
+                driver['lat'] = snapshot.data.docs[i]['lat'];
+                driver['lng'] = snapshot.data.docs[i]['lng'];
+              }
+            }
+            updateDriverMarker();
+            return GoogleMap(
+                mapType: MapType.normal,
+                onMapCreated: _onMapCreated,
+                markers: _markers,
+                initialCameraPosition: _kGooglePlex
+            );
+          }
       ),
       drawer: Drawer(
         backgroundColor: Colors.white,
@@ -158,4 +197,29 @@ class MapSampleState extends State<MapSample>
       floatingActionButtonLocation: FloatingActionButtonLocation.startFloat,
     );
   }
+
+  _requestPermission() async {
+    var status = await Permission.location.request();
+    if (status.isGranted) {
+      print('done');
+    } else if (status.isDenied) {
+      _requestPermission();
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
+  }
+
+  /*FirebaseFirestore.instance.collection('Drivers').doc(student["busID"]).get().then((value) => {
+              driver = value.data()
+            });
+            print("*********************************");
+            print(driver["lat"]);
+            print(driver["lng"]);
+            print("*********************************");
+  return  GoogleMap(
+  mapType: MapType.normal,
+  onMapCreated: _onMapCreated,
+  markers: _markers,
+  initialCameraPosition: _kGooglePlex
+  );*/
 }
