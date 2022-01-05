@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dynamicrouteplanner/CoreAlgorithm/DynamicACO.dart';
 import 'package:dynamicrouteplanner/Screens/Driver/AddPassenger.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
 import 'package:dynamicrouteplanner/main.dart';
@@ -121,6 +122,7 @@ class MapSampleState extends State<MapSample>
 
   @override
   Widget build(BuildContext context) {
+
     return new Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blueAccent[200],
@@ -179,7 +181,17 @@ class MapSampleState extends State<MapSample>
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
+        onPressed: () {
+          List<List<double>> graph = [
+            [-1, 10, 0, 30, 40],
+            [10, -1, 35, 25, 20],
+            [0, 35, -1, 30, 40],
+            [30, 25, 30, -1, 40],
+            [40, 20, 40, 40, -1]
+          ];
+          List<String> places = ["Start", "1", "End", "3", "4"];
+          new DynamicACO(5, graph, 50, places, null).run();
+        },
         label: Text('Find Shortest Path'),
         icon: Icon(Icons.directions_bus),
       ),
@@ -187,10 +199,6 @@ class MapSampleState extends State<MapSample>
     );
   }
 
-  Future<void> _goToTheLake() async {
-    final GoogleMapController controller = await _controller.future;
-    controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
-  }
   _getLocation() async {
     try {
       final loc.LocationData _locationResult = await location.getLocation();
