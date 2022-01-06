@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -45,6 +46,24 @@ class DRPAuthAPI
         });
     }
 
+    void setStudent() async
+    {
+        await FirebaseFirestore.instance.collection('Passengers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) => {
+            student = value.data()
+        });
+    }
+
+    void setDriver() async {
+
+        if (student != null) {
+            await FirebaseFirestore.instance.collection('Drivers').doc(student["busID"]).get().then((value) => {
+                driver = value.data()
+            });
+        } else {
+            driver = null;
+        }
+    }
+
     void DRIVER_addPassenger(String email) async {
         
         bool willAdd = false;
@@ -60,7 +79,7 @@ class DRPAuthAPI
                 textColor: Colors.white,
                 fontSize: 16.0)
                
-           } else if (value.data()["busID"] != 0) {
+           } else if (value.data()["busID"] != "0") {
                Fluttertoast.showToast(
                    msg: "User have has already bus!",
                    toastLength: Toast.LENGTH_SHORT,
@@ -119,7 +138,9 @@ class DRPAuthAPI
 
     Future googleLogin() async {
 
-        try { googleSignIn.signOut(); }
+        try {
+            googleSignIn.signOut();
+        }
         catch (error) { print(error); }
 
         final googleUserInscope = await googleSignIn.signIn();

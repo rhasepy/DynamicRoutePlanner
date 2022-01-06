@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/CoreAlgorithm/DynamicACO.dart';
 import 'package:dynamicrouteplanner/Screens/Driver/AddPassenger.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
 import 'package:dynamicrouteplanner/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -27,8 +28,6 @@ class MapSample extends StatefulWidget {
 
 class MapSampleState extends State<MapSample>
 {
-  Completer<GoogleMapController> _controller = Completer();
-
   final loc.Location location = loc.Location();
   StreamSubscription<loc.LocationData> locationSubscription;
 
@@ -70,6 +69,8 @@ class MapSampleState extends State<MapSample>
       child: InkWell(
         onTap: () async {
               await FirebaseAuth.instance.signOut();
+              student = null;
+              driver = null;
               Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => MyApp()), ModalRoute.withName("/Home"));
             },
         child: Padding(
@@ -107,12 +108,6 @@ class MapSampleState extends State<MapSample>
       ),
     );
   }
-
-  static final CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
 
   @override
   void initState() {
@@ -157,9 +152,7 @@ class MapSampleState extends State<MapSample>
                               ],
                             ),
                             trailing: IconButton(icon: Icon(Icons.directions),
-                              onPressed: (){
-                                print("asd");
-                              },),
+                              onPressed: (){},),
                           );
                       });
                 }
@@ -202,7 +195,7 @@ class MapSampleState extends State<MapSample>
   _getLocation() async {
     try {
       final loc.LocationData _locationResult = await location.getLocation();
-      await FirebaseFirestore.instance.collection('Drivers').doc("ozannyesiller@gmail.com").set({
+      await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).set({
         'lat': _locationResult.latitude,
         'lng': _locationResult.longitude,
       }, SetOptions(merge: true));
@@ -219,7 +212,7 @@ class MapSampleState extends State<MapSample>
         locationSubscription = null;
       });
     }).listen((loc.LocationData currentlocation) async {
-      await FirebaseFirestore.instance.collection('Drivers').doc("ozannyesiller@gmail.com").set({
+      await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).set({
         'lat': currentlocation.latitude,
         'lng': currentlocation.longitude,
       }, SetOptions(merge: true));

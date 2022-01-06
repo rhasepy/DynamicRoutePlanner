@@ -9,9 +9,10 @@ import 'package:dynamicrouteplanner/components/rounded_phone_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:location/location.dart' as loc;
 
 class TypeAsker extends StatefulWidget {
   @override
@@ -20,6 +21,7 @@ class TypeAsker extends StatefulWidget {
 
 class _TypeAsker extends State<TypeAsker>
 {
+  final loc.Location location = loc.Location();
   String _phoneNumber;
   String _nickName;
   DRPAuthAPI _API;
@@ -51,6 +53,9 @@ class _TypeAsker extends State<TypeAsker>
   @override
   void initState() {
 
+    super.initState();
+    _requestPermission();
+
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) =>
           tryApply(value.data()));
@@ -64,6 +69,17 @@ class _TypeAsker extends State<TypeAsker>
         stayScreen = true;
       });
     });
+  }
+
+  _requestPermission() async {
+    var status = await Permission.location.request();
+    if (status.isGranted) {
+      print('done');
+    } else if (status.isDenied) {
+      _requestPermission();
+    } else if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
   }
 
   @override
@@ -104,16 +120,18 @@ class _TypeAsker extends State<TypeAsker>
                               fontSize: 16.0
                           );
                         } else {
+                          final loc.LocationData _locationResult = await location.getLocation();
                           await _API.addPassenger(
                               {
                                 "name" : this._nickName,
                                 "phone" : this._phoneNumber,
-                                "lat" : 0.toDouble(),
-                                "lng" : 0.toDouble(),
-                                "incoming" : false,
-                                "busID" : 0,
+                                "lat" : _locationResult.latitude,
+                                "lng" : _locationResult.longitude,
+                                "incoming" : true,
+                                "busID" : "0",
                                 "UUID" : FirebaseAuth.instance.currentUser.uid,
-                                "email" : FirebaseAuth.instance.currentUser.email
+                                "email" : FirebaseAuth.instance.currentUser.email,
+                                "locationUpdate" : false
                               }
                           );
                           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Passenger()), ModalRoute.withName("/Home"));
@@ -144,9 +162,11 @@ class _TypeAsker extends State<TypeAsker>
                                 "lat" : 0.toDouble(),
                                 "lng" : 0.toDouble(),
                                 "incomingList" : emptyList,
-                                "busID" : 0,
+                                "busID" : FirebaseAuth.instance.currentUser.email,
                                 "UUID" : FirebaseAuth.instance.currentUser.uid,
-                                "email" : FirebaseAuth.instance.currentUser.email
+                                "email" : FirebaseAuth.instance.currentUser.email,
+                                "sLat" : 0,
+                                "sLng" : 0
                               }
                           );
                           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));

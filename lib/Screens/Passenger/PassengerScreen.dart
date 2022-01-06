@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dynamicrouteplanner/FirebaseAuthAPI/ProxyAuthAPI.dart';
 import 'package:dynamicrouteplanner/Screens/Passenger/ChangeLocation.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
@@ -27,8 +28,6 @@ class MapSample extends StatefulWidget {
 
 class MapSampleState extends State<MapSample>
 {
-  Completer<GoogleMapController> _controller = Completer();
-
   Widget _ExitDrawer()
   {
     return Material(
@@ -73,9 +72,9 @@ class MapSampleState extends State<MapSample>
     );
   }
 
-  static final CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(student["lat"], student["lng"]),
-    zoom: 11.4746,
+  static CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(40.8809433, 29.2577417),
+    zoom: 7.4746,
   );
 
   Set<Marker> _markers = {};
@@ -88,7 +87,25 @@ class MapSampleState extends State<MapSample>
   @override
   void initState() {
     super.initState();
-    _requestPermission();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _requestPermission();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        DRPAuthAPI().setStudent();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        DRPAuthAPI().setDriver();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _kGooglePlex = CameraPosition(
+        target: LatLng(student["lat"], student["lng"]),
+        zoom: 11.4746,
+      );
+    });
+
 
     BitmapDescriptor.fromAssetImage(
         ImageConfiguration(), 'assets/images/bus.png')
@@ -100,7 +117,6 @@ class MapSampleState extends State<MapSample>
         .then((value) {
       studentPin = value;
     });
-    //_listenLocation();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -116,9 +132,9 @@ class MapSampleState extends State<MapSample>
             ),
         )
       );
-
-      _markers.add(
-          Marker(
+      if (driver != null) {
+        _markers.add(
+            Marker(
               markerId: MarkerId('id-2'),
               position: LatLng(driver["lat"], driver["lng"]),
               icon: driverPin,
@@ -126,8 +142,9 @@ class MapSampleState extends State<MapSample>
                   title: "Bus Driver",
                   snippet: "Your Bus Driver Location"
               ),
-          )
-      );
+            )
+        );
+      }
     });
   }
 
@@ -135,7 +152,7 @@ class MapSampleState extends State<MapSample>
 
       if (_markers.length > 1) {
         _markers.remove(_markers.elementAt(1));
-        _markers.add( Marker(
+        _markers.add(Marker(
           markerId: MarkerId('id-2'),
           position: LatLng(driver["lat"], driver["lng"]),
           icon: driverPin,
@@ -162,16 +179,21 @@ class MapSampleState extends State<MapSample>
               return Center(child: CircularProgressIndicator());
             }
             // Update just driver location that is user's driver
+            bool isUpdate = false;
             try {
               for (int i = 0; i < snapshot.data.docs.length; ++i) {
-                if (snapshot.data.docs[i]['email'] == driver['email']) {
-                  driver['lat'] = snapshot.data.docs[i]['lat'];
-                  driver['lng'] = snapshot.data.docs[i]['lng'];
+                if (driver != null) {
+                  if (snapshot.data.docs[i]['email'] == driver['email']) {
+                    isUpdate = true;
+                    driver['lat'] = snapshot.data.docs[i]['lat'];
+                    driver['lng'] = snapshot.data.docs[i]['lng'];
+                  }
                 }
               }
             } catch (e) {}
+            if (isUpdate)
+              updateDriverMarker();
 
-            updateDriverMarker();
             return GoogleMap(
                 mapType: MapType.normal,
                 onMapCreated: _onMapCreated,
@@ -214,18 +236,4 @@ class MapSampleState extends State<MapSample>
       openAppSettings();
     }
   }
-
-  /*FirebaseFirestore.instance.collection('Drivers').doc(student["busID"]).get().then((value) => {
-              driver = value.data()
-            });
-            print("*********************************");
-            print(driver["lat"]);
-            print(driver["lng"]);
-            print("*********************************");
-  return  GoogleMap(
-  mapType: MapType.normal,
-  onMapCreated: _onMapCreated,
-  markers: _markers,
-  initialCameraPosition: _kGooglePlex
-  );*/
 }
