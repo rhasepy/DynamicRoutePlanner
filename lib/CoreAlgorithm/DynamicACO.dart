@@ -61,9 +61,9 @@ class DynamicACO
       }
 
       this.edges = List.generate(num_nodes, (index) => List.generate(num_nodes, (index) => null));
-      for (int i = 0; i < this.num_nodes; ++i) {
+      /*for (int i = 0; i < this.num_nodes; ++i) {
         this.edges[i] = List.generate(num_nodes, (index) => null);
-      }
+      }*/
 
       for (int i = 0; i < this.num_nodes; ++i) {
         for (int j = i + 1; j < this.num_nodes; ++j) {
@@ -121,6 +121,7 @@ class DynamicACO
   {
     this._acs();
     print("Route: ");
+    print(this.globalBestTour);
     for (int i = 0; i < globalBestTour.length; ++i) {
       print(this.labels[globalBestTour[i]]);
     }

@@ -1,12 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/CoreAlgorithm/DynamicACO.dart';
 import 'package:dynamicrouteplanner/Screens/Driver/AddPassenger.dart';
+import 'package:dynamicrouteplanner/Screens/Driver/Calculating.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
 import 'package:dynamicrouteplanner/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:async';
 import 'package:location/location.dart' as loc;
 import 'package:permission_handler/permission_handler.dart';
@@ -184,6 +184,7 @@ class MapSampleState extends State<MapSample>
           ];
           List<String> places = ["Start", "1", "End", "3", "4"];
           new DynamicACO(5, graph, 50, places, null).run();
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoadToCalculate()));
         },
         label: Text('Find Shortest Path'),
         icon: Icon(Icons.directions_bus),

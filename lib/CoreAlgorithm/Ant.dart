@@ -78,6 +78,11 @@ class Ant
   {
     this.distance = 0.0;
     for (int i = 0; i < num_nodes; ++i) {
+      print(this.tour[i].toString() + " " + this.tour[(i + 1) % this.num_nodes].toString());
+      print("**************");
+      print(this.edges);
+      print("**************");
+
       this.distance += this.edges[this.tour[i]][this.tour[(i + 1) % this.num_nodes]].weight;
     }
     return this.distance;
