@@ -17,7 +17,7 @@ class Ant
     this.beta = beta;
     this.num_nodes = num_nodes;
     this.edges = edges;
-    this.tour = new List.empty();
+    this.tour = null;
     this.distance = 0.0;
   }
 
@@ -25,7 +25,7 @@ class Ant
   {
     List<int> unvisited_nodes = [];
     for (int i = 0; i < num_nodes; ++i) {
-      if (!this.tour.contains(i)){
+      if (this.tour != null && (!this.tour.contains(i))){
         unvisited_nodes.add(i);
       }
     }
@@ -50,7 +50,7 @@ class Ant
       roulette += coeff;
     }
 
-    double random_value = new Random().nextDouble() % roulette;
+    double random_value = 0 + (roulette - 0) * (new Random().nextDouble());
     double wheel_pos = 0.0;
     for (int unvisited in unvisited_nodes) {
       double w = this.edges[this.tour.last][unvisited].weight;
@@ -78,11 +78,6 @@ class Ant
   {
     this.distance = 0.0;
     for (int i = 0; i < num_nodes; ++i) {
-      print(this.tour[i].toString() + " " + this.tour[(i + 1) % this.num_nodes].toString());
-      print("**************");
-      print(this.edges);
-      print("**************");
-
       this.distance += this.edges[this.tour[i]][this.tour[(i + 1) % this.num_nodes]].weight;
     }
     return this.distance;

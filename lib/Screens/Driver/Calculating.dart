@@ -72,8 +72,6 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
       for (int i = 0; i < comingStudents.length; ++i) {
         places.add(comingStudents[i]["name"].toString());
       }
-      print(graph);
-      print(places);
       new DynamicACO(5, graph, 50, places, null).run();
     }
   }

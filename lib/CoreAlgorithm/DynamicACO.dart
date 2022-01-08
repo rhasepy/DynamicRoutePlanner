@@ -61,9 +61,6 @@ class DynamicACO
       }
 
       this.edges = List.generate(num_nodes, (index) => List.generate(num_nodes, (index) => null));
-      /*for (int i = 0; i < this.num_nodes; ++i) {
-        this.edges[i] = List.generate(num_nodes, (index) => null);
-      }*/
 
       for (int i = 0; i < this.num_nodes; ++i) {
         for (int j = i + 1; j < this.num_nodes; ++j) {
