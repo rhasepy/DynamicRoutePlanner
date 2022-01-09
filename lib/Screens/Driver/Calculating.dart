@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/CoreAlgorithm/DynamicACO.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -47,11 +48,19 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
     List<Map<String, dynamic>> comingStudents = [];
 
     if (driver != null) {
+
+      await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).get().then((value) => {
+        driver = value.data()
+      });
+
       for (String item in driver["incomingList"]) {
         await FirebaseFirestore.instance.collection('Passengers').doc(item).get().then((value) => {
-          comingStudents.add(value.data())
+          if (value.data()["incoming"] == true) {
+            comingStudents.add(value.data())
+          }
         });
       }
+
       Map<String, dynamic> school =
       {
           "lat"   : driver["sLat"],
@@ -70,9 +79,31 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
 
       List<String> places = [];
       for (int i = 0; i < comingStudents.length; ++i) {
-        places.add(comingStudents[i]["name"].toString());
+          places.add(comingStudents[i]["name"].toString());
       }
-      new DynamicACO(5, graph, 50, places, null).run();
+
+      if (driver["prevTour"] == null || List.castFrom(driver["prevTour"]).length == 0) {
+        new DynamicACO(context, 5, graph, 50, places, null).run();
+      }
+      else {
+        List<String> prevTour = List.castFrom(driver["prevTour"]);
+        // User not coming
+        for (int i = 0; i < prevTour.length; ++i) {
+          if (!places.contains(prevTour[i])) {
+            prevTour.removeAt(i);
+          }
+        }
+
+        // User location change check
+        for (int i = 0; i < comingStudents.length; ++i) {
+          if (comingStudents[i]["locationUpdate"] != null && comingStudents[i]["locationUpdate"] == true) {
+            if (prevTour.contains(comingStudents[i]["name"])) {
+              prevTour.remove(comingStudents[i]["name"]);
+            }
+          }
+        }
+        new DynamicACO(context, 5, graph, 50, places, prevTour).run();
+      }
     }
   }
 
@@ -87,7 +118,12 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
             backgroundColor: Colors.blueAccent[200],
             title: Text("Dynamic Route Planner - Driver"),
           ),
-          body: Text("Hesaplaniyor"),
+          body: Center(
+            child: Text("Calculating",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 25),
+            ),
+          ),
         ),
         onWillPop: () {
           _clear_memory();

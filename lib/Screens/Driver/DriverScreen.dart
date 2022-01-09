@@ -1,15 +1,19 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dynamicrouteplanner/CoreAlgorithm/DynamicACO.dart';
-import 'package:dynamicrouteplanner/Screens/Driver/AddPassenger.dart';
-import 'package:dynamicrouteplanner/Screens/Driver/Calculating.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
-import 'package:dynamicrouteplanner/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'dart:async';
-import 'package:location/location.dart' as loc;
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+import 'package:location/location.dart' as loc;
+
+import '../../main.dart';
+import 'AddPassenger.dart';
+import 'Calculating.dart';
 
 class Driver extends StatelessWidget {
   @override
@@ -109,10 +113,85 @@ class MapSampleState extends State<MapSample>
     );
   }
 
+  static CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(40.8809433, 29.2577417),
+    zoom: 7.4746,
+  );
+
+  Set<Marker> _markers = {};
+  BitmapDescriptor driverPin;
+  BitmapDescriptor schoolPin;
+
   @override
   void initState() {
     super.initState();
-    _requestPermission();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _requestPermission();
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _kGooglePlex = CameraPosition(
+        target: LatLng(driver["lat"], driver["lng"]),
+        zoom: 11.4746,
+      );
+    });
+
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(), 'assets/images/bus.png')
+        .then((value) {
+      driverPin = value;
+    });
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(), 'assets/images/school.png')
+        .then((value) {
+      schoolPin = value;
+    });
+  }
+
+  void _onMapCreated(GoogleMapController controller) {
+    setState(() {
+      if (driver != null) {
+        if (driver["sLat"] != 0 && driver["sLng"] != 0) {
+          _markers.add(
+              Marker(
+                markerId: MarkerId('id-1'),
+                position: LatLng(driver["sLat"], driver["sLng"]),
+                icon: schoolPin,
+                infoWindow: InfoWindow(
+                  title: "School",
+                  snippet: "School Location",
+                ),
+              )
+          );
+        }
+        _markers.add(
+            Marker(
+              markerId: MarkerId('id-2'),
+              position: LatLng(driver["lat"], driver["lng"]),
+              icon: driverPin,
+              infoWindow: InfoWindow(
+                  title: "Bus Driver",
+                  snippet: "Your Location"
+              ),
+            )
+        );
+      }
+    });
+  }
+
+  void updateDriverMarker() {
+    if (_markers.length > 1) {
+      _markers.remove(_markers.elementAt(_markers.length - 1));
+      _markers.add(Marker(
+        markerId: MarkerId('id-2'),
+        position: LatLng(driver["lat"], driver["lng"]),
+        icon: driverPin,
+        infoWindow: InfoWindow(
+            title: "Bus Driver",
+            snippet: "Your Bus Driver Location"
+        ),
+      ));
+    }
   }
 
   @override
@@ -125,15 +204,22 @@ class MapSampleState extends State<MapSample>
       ),
       body: Column(
         children: [
-          TextButton(onPressed: () {
-            _getLocation();
-          }, child: Text("Add my location")),
-          TextButton(onPressed: () {
-            _listenLocation();
-          }, child: Text("Enable live location")),
-          TextButton(onPressed: () {
-            _stopListening();
-          }, child: Text("Stop live location")),
+          TextButton(
+              onPressed: () {
+                _listenLocation();},
+              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+              child: Text("Enable live location")),
+          TextButton(
+              onPressed: () {
+                _stopListening();},
+              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+              child: Text("Stop live location")),
+          TextButton(
+            onPressed: () {
+              _getLocation();},
+            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
+            child: Text("Add my location"),
+          ),
           Expanded(
               child: StreamBuilder(
                 stream: FirebaseFirestore.instance.collection('Drivers').snapshots(),
@@ -141,20 +227,28 @@ class MapSampleState extends State<MapSample>
                   if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
                   }
-                  return ListView.builder(
-                      itemCount: snapshot.data.docs.length,
-                      itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(snapshot.data.docs[index]['lat'].toString()),
-                            subtitle: Row(
-                              children: [
-                                Text(snapshot.data.docs[index]['lng'].toString())
-                              ],
-                            ),
-                            trailing: IconButton(icon: Icon(Icons.directions),
-                              onPressed: (){},),
-                          );
-                      });
+                  bool isUpdate = false;
+                  try {
+                    for (int i = 0; i < snapshot.data.docs.length; ++i) {
+                      if (driver != null) {
+                        if (snapshot.data.docs[i]['email'] == driver['email']) {
+                          isUpdate = true;
+                          driver['lat'] = snapshot.data.docs[i]['lat'];
+                          driver['lng'] = snapshot.data.docs[i]['lng'];
+                        }
+                      }
+                    }
+                  } catch (e) {}
+                  if (isUpdate)
+                    updateDriverMarker();
+                  return Container(
+                    child: GoogleMap(
+                        mapType: MapType.normal,
+                        onMapCreated: _onMapCreated,
+                        markers: _markers,
+                        initialCameraPosition: _kGooglePlex
+                    ),
+                  );
                 }
               ),
           ),
@@ -175,15 +269,6 @@ class MapSampleState extends State<MapSample>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          List<List<double>> graph = [
-            [-1, 10, 0, 30, 40],
-            [10, -1, 35, 25, 20],
-            [0, 35, -1, 30, 40],
-            [30, 25, 30, -1, 40],
-            [40, 20, 40, 40, -1]
-          ];
-          List<String> places = ["Start", "1", "End", "3", "4"];
-          new DynamicACO(5, graph, 50, places, null).run();
           Navigator.of(context).push(MaterialPageRoute(builder: (context) => LoadToCalculate()));
         },
         label: Text('Find Shortest Path'),

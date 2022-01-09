@@ -157,16 +157,17 @@ class _TypeAsker extends State<TypeAsker>
                           List emptyList = List.empty();
                           await _API.addDriver(
                               {
-                                "name" : this._nickName,
-                                "phone" : this._phoneNumber,
-                                "lat" : 0.toDouble(),
-                                "lng" : 0.toDouble(),
-                                "incomingList" : emptyList,
-                                "busID" : FirebaseAuth.instance.currentUser.email,
-                                "UUID" : FirebaseAuth.instance.currentUser.uid,
-                                "email" : FirebaseAuth.instance.currentUser.email,
-                                "sLat" : 0,
-                                "sLng" : 0
+                                "name"          : this._nickName,
+                                "phone"         : this._phoneNumber,
+                                "lat"           : 0.toDouble(),
+                                "lng"           : 0.toDouble(),
+                                "incomingList"  : emptyList,
+                                "busID"         : FirebaseAuth.instance.currentUser.email,
+                                "UUID"          : FirebaseAuth.instance.currentUser.uid,
+                                "email"         : FirebaseAuth.instance.currentUser.email,
+                                "sLat"          : 0,
+                                "sLng"          : 0,
+                                "prevTour"      : ""
                               }
                           );
                           Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));

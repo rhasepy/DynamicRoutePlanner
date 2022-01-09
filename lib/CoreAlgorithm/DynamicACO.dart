@@ -1,4 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/CoreAlgorithm/Edge.dart';
+import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'Ant.dart';
 
@@ -27,14 +31,18 @@ class DynamicACO
 
   bool incompability;
 
-  DynamicACO(int colony_size,
+  BuildContext context;
+
+  DynamicACO(BuildContext context, int colony_size,
       List<List<double>> graph,
       int steps,
       List<String> labels,
       List<String> prevPath)
   {
+    this.context = context;
     if(graph == null) {
       incompability = true;
+      Navigator.pop(this.context);
     }
     else {
       this.globalBestTour = new List.empty();
@@ -71,7 +79,27 @@ class DynamicACO
       }
 
       if (prevPath != null) {
-        // TODO: Prev toura göre işlem yapılacak
+        for (int i = 0; i < prevPath.length; ++i) {
+          String temp;
+          if (i - 1 < 0)
+            temp = prevPath.last;
+          else
+            temp = prevPath[i];
+          if (labels.contains(temp) && labels.contains(prevPath[i])) {
+            for (int j = 0; j < labels.length; ++j) {
+              if (temp == labels[j]) {
+                for (int k = 0; k < labels.length; ++k) {
+                  if (prevPath[i] == labels[k]) {
+                    if (this.edges[j][k] != null)
+                      this.edges[j][k].pheremone = 2.0;
+                    if (this.edges[k][j] != null)
+                      this.edges[k][j].pheremone = 2.0;
+                  }
+                }
+              }
+            }
+          }
+        }
       }
 
       this.ants = List.generate(this._colonySize, (index) => null);
@@ -114,16 +142,20 @@ class DynamicACO
     }
   }
 
-  void run()
+  void run() async
   {
     this._acs();
+    List<String> prevTour = [];
     print("Route: ");
-    print(this.globalBestTour);
     for (int i = 0; i < globalBestTour.length; ++i) {
-      print(this.labels[globalBestTour[i]]);
+      prevTour.add(this.labels[globalBestTour[i]]);
     }
+    print(prevTour);
     print("\nCost: " + this.globalBestDistance.toString());
+
     this.incompability = true;
-    // TODO: Prev Tour kayıt edilecek
+    driver["prevTour"] = prevTour;
+    await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).update(driver);
+    Navigator.pop(this.context);
   }
 }
