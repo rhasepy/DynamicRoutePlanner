@@ -53,10 +53,12 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
         driver = value.data()
       });
 
+      students = [];
       for (String item in driver["incomingList"]) {
         await FirebaseFirestore.instance.collection('Passengers').doc(item).get().then((value) => {
           if (value.data()["incoming"] == true) {
-            comingStudents.add(value.data())
+            comingStudents.add(value.data()),
+            students.add(value.data())
           }
         });
       }
@@ -65,7 +67,8 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
       {
           "lat"   : driver["sLat"],
           "lng"   : driver["sLng"],
-          "name"  : "School"
+          "name"  : "School",
+          "email" : "School"
       };
       comingStudents.add(school);
       comingStudents.add(driver);
@@ -79,7 +82,7 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
 
       List<String> places = [];
       for (int i = 0; i < comingStudents.length; ++i) {
-          places.add(comingStudents[i]["name"].toString());
+          places.add(comingStudents[i]["email"].toString());
       }
 
       if (driver["prevTour"] == null || List.castFrom(driver["prevTour"]).length == 0) {

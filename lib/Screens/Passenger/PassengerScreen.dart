@@ -217,7 +217,7 @@ class MapSampleState extends State<MapSample>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => ChangeLocation()), ModalRoute.withName("/Home"));
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) => ChangeLocation()));
         },
         label: Text('Change Location'),
         icon: Icon(Icons.directions_walk),

@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dynamicrouteplanner/CoreAlgorithm/Edge.dart';
+import 'package:dynamicrouteplanner/Screens/Driver/DriverScreen.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 import 'Ant.dart';
 
@@ -148,14 +150,28 @@ class DynamicACO
     List<String> prevTour = [];
     print("Route: ");
     for (int i = 0; i < globalBestTour.length; ++i) {
-      prevTour.add(this.labels[globalBestTour[i]]);
+      if (this.labels[globalBestTour[i]] == FirebaseAuth.instance.currentUser.email) {
+        prevTour.add(this.labels[globalBestTour[i]]);
+      }
     }
-    print(prevTour);
+    for(int i = 0; i < globalBestTour.length; ++i) {
+      if (this.labels[globalBestTour[i]] != "School" && this.labels[globalBestTour[i]] != FirebaseAuth.instance.currentUser.email) {
+        prevTour.add(this.labels[globalBestTour[i]]);
+      }
+    }
+    for (int i = 0; i < globalBestTour.length; ++i) {
+      if (this.labels[globalBestTour[i]] == "School") {
+        prevTour.add(this.labels[globalBestTour[i]]);
+      }
+    }
+    //print(prevTour);
+    path = prevTour;
     print("\nCost: " + this.globalBestDistance.toString());
 
     this.incompability = true;
     driver["prevTour"] = prevTour;
     await FirebaseFirestore.instance.collection('Drivers').doc(FirebaseAuth.instance.currentUser.email).update(driver);
-    Navigator.pop(this.context);
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
+    //Navigator.pop(this.context);
   }
 }

@@ -1,11 +1,12 @@
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dynamicrouteplanner/Screens/Driver/RemovePassenger.dart';
 import 'package:dynamicrouteplanner/StaticConstants/constants.dart';
 import 'package:dynamicrouteplanner/components/drawer_header.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -100,6 +101,36 @@ class MapSampleState extends State<MapSample>
     );
   }
 
+  Widget _RempvePassengerDrawer() {
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => RemovePassenger()), ModalRoute.withName("/Home"));
+        },
+        child: Padding(
+          padding: EdgeInsets.only(top: 10),
+          child:Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                margin: EdgeInsets.only(right: 20),
+                height: 50,
+                width: 50,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/icons/Main.png'),
+                  ),
+                ),
+              ),
+              Text("Remove Passengers", style: TextStyle(color: Colors.black, fontSize: 20),),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget Driver_DrawerList()
   {
     return Container(
@@ -107,6 +138,7 @@ class MapSampleState extends State<MapSample>
       child: Column(
         children: [
           _AddPassengerDrawer(),
+          _RempvePassengerDrawer(),
           _ExitDrawer()
         ],
       ),
@@ -119,8 +151,14 @@ class MapSampleState extends State<MapSample>
   );
 
   Set<Marker> _markers = {};
+
   BitmapDescriptor driverPin;
   BitmapDescriptor schoolPin;
+  BitmapDescriptor studentPin;
+
+  int idx = -1;
+  int uBound = 0;
+  String next = "";
 
   @override
   void initState() {
@@ -135,7 +173,6 @@ class MapSampleState extends State<MapSample>
         zoom: 11.4746,
       );
     });
-
     BitmapDescriptor.fromAssetImage(
         ImageConfiguration(), 'assets/images/bus.png')
         .then((value) {
@@ -146,6 +183,17 @@ class MapSampleState extends State<MapSample>
         .then((value) {
       schoolPin = value;
     });
+    BitmapDescriptor.fromAssetImage(
+        ImageConfiguration(), 'assets/images/student.png')
+        .then((value) {
+      studentPin = value;
+    });
+
+    if (path != null) {
+      idx = 1;
+      uBound = path.length;
+      next = path[1];
+    }
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -179,9 +227,15 @@ class MapSampleState extends State<MapSample>
     });
   }
 
-  void updateDriverMarker() {
+  void updateDriverMarker() async {
+    int idx = -1;
+    for (int i = 0; i < _markers.length; ++i) {
+      if (_markers.elementAt(i).markerId == MarkerId('id-2'))
+          idx = i;
+    }
+
     if (_markers.length > 1) {
-      _markers.remove(_markers.elementAt(_markers.length - 1));
+      _markers.remove(_markers.elementAt(idx));
       _markers.add(Marker(
         markerId: MarkerId('id-2'),
         position: LatLng(driver["lat"], driver["lng"]),
@@ -192,6 +246,30 @@ class MapSampleState extends State<MapSample>
         ),
       ));
     }
+
+    if (path != null) {
+        for (int i = 1; i < path.length - 1; ++i) {
+          for (int j = 0; j < students.length; ++j) {
+            if (path[i] == students[j]["email"]) {
+              _markers.add(Marker(
+                markerId: MarkerId(students[j]["email"]),
+                position: LatLng(students[j]["lat"], students[j]["lng"]),
+                icon: studentPin,
+                infoWindow: InfoWindow(
+                    title: "Student: ",
+                    snippet: students[j]["email"]
+                ),
+              ));
+            }
+          }
+        }
+    }
+  }
+
+  @override
+  void dispose() {
+    _stopListening();
+    super.dispose();
   }
 
   @override
@@ -204,21 +282,51 @@ class MapSampleState extends State<MapSample>
       ),
       body: Column(
         children: [
-          TextButton(
-              onPressed: () {
-                _listenLocation();},
-              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-              child: Text("Enable live location")),
-          TextButton(
-              onPressed: () {
-                _stopListening();},
-              style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-              child: Text("Stop live location")),
-          TextButton(
-            onPressed: () {
-              _getLocation();},
-            style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.black)),
-            child: Text("Add my location"),
+          Container(
+            color: Colors.blueAccent[200],
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    _getLocation();},
+                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                  child: Text("Add my location"),
+                ),
+                TextButton(
+                    onPressed: () {
+                      _listenLocation();},
+                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                    child: Text("Enable live location")),
+                TextButton(
+                    onPressed: () {
+                      _stopListening();},
+                    style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                    child: Text("Stop live location")),
+              ],
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextButton(
+                  onPressed: () {
+                    setState(() {
+                      print(path);
+                      if (idx != -1) {
+                        if (idx < path.length - 1) {
+                          next = path[idx];
+                        } else if (idx == path.length - 1) {
+                          next = "Completed";
+                        }
+                        idx += 1;
+                      }
+                      print(next);
+                    });
+                    },
+                  style: ButtonStyle(backgroundColor: MaterialStateProperty.all(Colors.white)),
+                  child: Text(next)),
+            ],
           ),
           Expanded(
               child: StreamBuilder(
@@ -246,7 +354,7 @@ class MapSampleState extends State<MapSample>
                         mapType: MapType.normal,
                         onMapCreated: _onMapCreated,
                         markers: _markers,
-                        initialCameraPosition: _kGooglePlex
+                        initialCameraPosition: _kGooglePlex,
                     ),
                   );
                 }
@@ -306,10 +414,12 @@ class MapSampleState extends State<MapSample>
   }
 
   _stopListening() {
-    locationSubscription.cancel();
-    setState(() {
-      locationSubscription = null;
-    });
+    if (locationSubscription != null) {
+      locationSubscription.cancel();
+      setState(() {
+        locationSubscription = null;
+      });
+    }
   }
 
   _requestPermission() async {
