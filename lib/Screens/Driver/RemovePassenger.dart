@@ -32,8 +32,10 @@ class RemovePassenger extends StatelessWidget {
                 RoundedButton(
                   text: "Remove Passenger",
                   press: () async {
-                    if (_email == "")
-                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
+                    if (_email != "") {
+                      await API.DRIVER_removePassenger(_email);
+                    }
+                    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
                   },
                 ),
               ],

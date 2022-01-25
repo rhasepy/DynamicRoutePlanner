@@ -32,10 +32,10 @@ class AddPassenger extends StatelessWidget {
                 RoundedButton(
                   text: "Add Passenger",
                   press: () async {
-                      if (_email != "")
+                      if (_email != "") {
                         await API.DRIVER_addPassenger(_email);
-                      else
-                        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
+                      }
+                      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => Driver()), ModalRoute.withName("/Home"));
                   },
                 ),
               ],

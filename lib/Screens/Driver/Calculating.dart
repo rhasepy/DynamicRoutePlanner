@@ -85,7 +85,7 @@ class _LoadToCalculateState extends State<LoadToCalculate> {
           places.add(comingStudents[i]["email"].toString());
       }
 
-      if (driver["prevTour"] == null || List.castFrom(driver["prevTour"]).length == 0) {
+      if (driver["prevTour"] == null || driver["prevTour"] == "" || List.castFrom(driver["prevTour"]).length == 0) {
         new DynamicACO(context, 5, graph, 50, places, null).run();
       }
       else {
